@@ -63,12 +63,11 @@ class DeezerSkill(OVOSCommonPlaybackSkill):
             # idx represents the order from deezer
             score = base_score - idx * 5  # - 5% as we go down the results list
 
-            score += 100 * fuzzy_match(phrase.lower(), match["title"].lower())
+            score += 100 * fuzzy_match(phrase.lower(), match.lower())
 
             # small penalty to not return 100 and allow better disambiguation
             if media_type == MediaType.GENERIC:
                 score -= 10
-
             if explicit_request:
                 score += 30
             return min(100, score)
@@ -86,24 +85,19 @@ class DeezerSkill(OVOSCommonPlaybackSkill):
                         'picture_big') or \
                           artist.get('picture_medium') or \
                           artist.get('picture_small') or artist.get('picture')
-                r = {
-                    "title": t["title"],
-                    "url": t["link"],
-                    "image": pic or self.skill_icon,
-                    "duration": t["duration"]
-                }
+
                 yield {
-                    "match_confidence": calc_score(r, idx),
+                    "match_confidence": calc_score(t["title"], idx),
                     "media_type": MediaType.MUSIC,
-                    "length": r.get("duration"),
-                    "uri": "deezer//" + r["url"],
+                    "length": t.get("duration"),
+                    "uri": "deezer//" + t["link"],
                     # NOTE: mycroft-gui fails to play deezer, so we need vlc
                     "playback": PlaybackType.AUDIO,
-                    "image": r.get("image"),
-                    "bg_image": r.get("image"),
+                    "image": pic or self.skill_icon,
+                    "bg_image": pic or self.skill_icon,
                     "skill_icon": self.skill_icon,
                     "skill_logo": self.skill_icon,  # backwards compat
-                    "title": r["title"],
+                    "title": t["title"],
                     "skill_id": self.skill_id
                 }
                 idx += 1
