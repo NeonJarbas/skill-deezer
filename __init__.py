@@ -1,22 +1,23 @@
-from os.path import join, dirname, isfile
+from os.path import isfile
+from os.path import join, dirname
 
 import deezeridu
 from json_database import JsonConfigXDG
-from ovos_plugin_common_play.ocp import MediaType, PlaybackType
+
 from ovos_utils.log import LOG
+from ovos_utils.ocp import MediaType, PlaybackType
 from ovos_utils.parse import fuzzy_match
-from ovos_workshop.skills.common_play import OVOSCommonPlaybackSkill, \
-    ocp_search
+from ovos_workshop.decorators.ocp import ocp_search
+from ovos_workshop.skills.common_play import OVOSCommonPlaybackSkill
 
 
 class DeezerSkill(OVOSCommonPlaybackSkill):
-    def __init__(self):
-        super(DeezerSkill, self).__init__("Deezer")
-        self.supported_media = [MediaType.GENERIC,
-                                MediaType.MUSIC]
-        self.skill_icon = join(dirname(__file__), "ui", "deezer.png")
+    def __init__(self, *args, **kwargs):
+        self.supported_media = [MediaType.MUSIC]
+        self.skill_icon = join(dirname(__file__), "res", "deezer.png")
         self.api = deezeridu.API()
         self.credentials = JsonConfigXDG("deezer", subfolder="deezeridu")
+        super().__init__(*args, **kwargs)
 
     def get_intro_message(self):
         self.speak_dialog("intro")
@@ -105,7 +106,3 @@ class DeezerSkill(OVOSCommonPlaybackSkill):
             # results = [t.track_info for t in self.api.search_track(phrase)]
         except Exception as e:
             self.log.error("Deezer search failed!")
-
-
-def create_skill():
-    return DeezerSkill()
